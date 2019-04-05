@@ -1,10 +1,8 @@
 import argparse
 import json
 import os
-
 from train_model import model
 
-import tensorflow as tf
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -82,9 +80,7 @@ if __name__ == '__main__':
     params['train steps'] = (arguments.pop('train_examples') * 1000) / params["batch size"]
     params['eval steps'] = arguments.pop('eval_steps')
 
-
     print("Will train for {} steps using batch_size={}".format(params['train steps'], params['batch size']))
-
 
     # Run the training job
     model.go_train(params)

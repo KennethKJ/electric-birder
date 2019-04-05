@@ -10,10 +10,6 @@ import os
 
 def create_estimator(params):
 
-    # learning_rate = params['learning_rate']
-    # dropout_rate = params['dropout_rate']
-    # num_classes = params['num_classes']
-
     # Import VGG16 model for transfer learning
     base_model = VGG16(weights='imagenet')
     base_model.summary()
@@ -22,7 +18,7 @@ def create_estimator(params):
 
     x = Dropout(params['dropout rate'])(x)
 
-    predictions = Dense(params['num classes'], activation="sigmoid", name="sm_out")(x)
+    predictions = Dense(params['num classes'], activation="softmax", name="sm_out")(x)
 
     model = Model(inputs=base_model.input, outputs=predictions)
 
@@ -35,13 +31,12 @@ def create_estimator(params):
     model.summary()
 
     model.compile(
-        loss="binary_crossentropy",
+        loss="categorical_crossentropy",
         optimizer=tf.train.AdamOptimizer(params['learning rate'],
                                          beta1=0.9,
                                          beta2=0.999),
         metrics=["accuracy"]
     )
-
 
     # Set up training config according to Intel recommendations
     NUM_PARALLEL_EXEC_UNITS = 4
@@ -62,7 +57,8 @@ def create_estimator(params):
         model_dir=params['output path']
     )
 
-    # Convert to Estimator (https://cloud.google.com/blog/products/gcp/new-in-tensorflow-14-converting-a-keras-model-to-a-tensorflow-estimator)
+    # Convert to Estimator (https://cloud.google.com/blog/products/gcp/
+    # new-in-tensorflow-14-converting-a-keras-model-to-a-tensorflow-estimator)
     estimator_model = kes.model_to_estimator(
         keras_model=model,
         config=run_config
@@ -107,8 +103,3 @@ def go_train(params):
 
     # Run training and evaluation
     tf.estimator.train_and_evaluate(Est, train_spec, eval_spec)
-
-# THING TO CHECK OUT
-
-# Add precision, recall etc to summary stuff
-# https://stackoverflow.com/questions/49619995/how-to-control-when-to-compute-evaluation-vs-training-using-the-estimator-api-of
