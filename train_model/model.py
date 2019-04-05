@@ -4,7 +4,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from train_model.input_fn import input_fn
 import tensorflow as tf
-from train_model import data_retriaval as dr
+from train_model import data_retrieval as dr
 import os
 
 
