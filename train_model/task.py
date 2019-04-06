@@ -1,8 +1,8 @@
-import argparse
-import json
-import os
-from train_model import model
+import sys
+sys.path.insert(0, 'C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/')
 
+import argparse
+from train_model import model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -10,7 +10,7 @@ if __name__ == '__main__':
         '--datapath',
         help='GCS path to data. We assume that data is in gs://BUCKET/babyweight/preproc/',
         required=False,
-        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/Databases/Unified Feeder Birds Database'
+        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/Databases/Unified Feeder Birds Database/'
     )
     parser.add_argument(
         '--output_dir',
@@ -57,6 +57,8 @@ if __name__ == '__main__':
     arguments.pop('job_dir', None)
     arguments.pop('job-dir', None)
 
+    import json
+    import os
     # Append trial_id to path if we are doing hptuning
     # This code can be removed if you are not using hyperparameter tuning
     # output_dir = os.path.join(
