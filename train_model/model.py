@@ -2,7 +2,8 @@ import tensorflow.keras.estimator as kes
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dropout, Flatten, Dense
-from train_model.input_fn import input_fn
+from train_model.new_input_fn import make_input_fn
+
 import tensorflow as tf
 from train_model import data_retrieval as dr
 import os
@@ -87,19 +88,21 @@ def go_train(params):
     Est = tf.contrib.estimator.add_metrics(Est, recall)
 
     # Get the data (in form of dictionary)
-    data = dr.get_data(params)
+    # data = dr.get_data(params)
 
     # Set up Estimator train and evaluation specifications
     train_spec = tf.estimator.TrainSpec(
-        input_fn=lambda: input_fn(data['train_images'], data['train_labels'], params, True)
+        input_fn=make_input_fn(params['train csv'], tf.estimator.ModeKeys.TRAIN, params, augment=True)
+        # lambda: input_fn(data['train_images'], data['train_labels'], params, True)
     )
     eval_spec = tf.estimator.EvalSpec(
-        input_fn=lambda: input_fn(data['eval_images'], data['eval_labels'], params, False),
+        input_fn=make_input_fn(params['train csv'], tf.estimator.ModeKeys.EVAL, params, augment=True),
         steps=10  # Evaluates on 10 batches
     )
 
     # Set logging level
     tf.logging.set_verbosity(tf.logging.DEBUG)
+
 
     # Run training and evaluation
     tf.estimator.train_and_evaluate(Est, train_spec, eval_spec)

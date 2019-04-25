@@ -1,12 +1,11 @@
 import tensorflow as tf
 from keras.applications.vgg16 import preprocess_input
-
-tf.logging.set_verbosity(v=tf.logging.INFO)
-import numpy as np
 from matplotlib import pyplot as plt
 
-HEIGHT = 299
-WIDTH = 299
+tf.logging.set_verbosity(v=tf.logging.INFO)
+
+HEIGHT = 224
+WIDTH = 224
 NUM_CHANNELS = 3
 NCLASSES = 123
 
@@ -38,10 +37,29 @@ def read_and_preprocess(image_bytes, label=None, augment=False):
 
     image = tf.cast(tf.round(image * 255), tf.int32)
     image = preprocess_input(image)
+
+    label = tf.one_hot(tf.strings.to_number(label, out_type=tf.int32), depth=10)
+
     return {"input_1": image}, label
 
 
-def make_input_fn(csv_of_filenames, batch_size, mode, augment=False):
+# def convert_labels(labels):
+#
+#     table_init = tf.tables_initializer()
+#
+#     filename_classes = "D:/ML/Databases/Birds_dB/Mappings/classes.txt"
+#     LIST_OF_LABELS = [line.strip() for line in open(filename_classes, 'r')]
+#
+#     labels_table = tf.contrib.lookup.index_table_from_tensor(
+#         mapping=tf.constant(value=LIST_OF_LABELS, dtype=tf.string))
+#
+#     labels = labels_table.lookup(labels)
+#     labels = tf.one_hot(indices=labels, depth=NCLASSES)
+#
+#     return labels
+
+
+def make_input_fn(csv_of_filenames, mode, params, augment=False):
     def _input_fn():
         def decode_csv(csv_row):
             filename, label = tf.decode_csv(records=csv_row, record_defaults=[[""], [""]])
@@ -58,42 +76,44 @@ def make_input_fn(csv_of_filenames, batch_size, mode, augment=False):
 
         if mode == tf.estimator.ModeKeys.TRAIN:
             num_epochs = None  # indefinitely
-            dataset = dataset.shuffle(buffer_size=10 * batch_size)
+            dataset = dataset.shuffle(buffer_size=10 * params["batch size"])
         else:
             num_epochs = 1  # end-of-input after this
 
-        dataset = dataset.repeat(count=num_epochs).batch(batch_size=batch_size)
+        dataset = dataset.repeat(count=num_epochs).batch(batch_size=params["batch size"])
         images, labels = dataset.make_one_shot_iterator().get_next()
 
         return images, labels
     return _input_fn
 
 
-a1 = make_input_fn("train_set_local.csv", 10, tf.estimator.ModeKeys.TRAIN, augment=False)
-b, c = a1()
+test = False
+if test:
+    a1 = make_input_fn("train_set_local.csv", 10, tf.estimator.ModeKeys.TRAIN, augment=False)
+    b, c = a1()
 
 
-filename = "D:/ML/Databases/Birds_dB/Mappings/classes.txt"
-LIST_OF_LABELS = [line.strip() for line in open(filename, 'r')]
+    filename = "D:/ML/Databases/Birds_dB/Mappings/classes.txt"
+    LIST_OF_LABELS = [line.strip() for line in open(filename, 'r')]
 
-labels_table = tf.contrib.lookup.index_table_from_tensor(
-    mapping=tf.constant(value=LIST_OF_LABELS, dtype=tf.string))
+    labels_table_2 = tf.contrib.lookup.index_table_from_tensor(
+        mapping=tf.constant(value=LIST_OF_LABELS, dtype=tf.string))
 
-with tf.Session() as sess:
-    tf.tables_initializer().run()
+    with tf.Session() as sess:
+        tf.tables_initializer().run()
 
-    while 1 == 1:
+        while 1 == 1:
 
-        imgs, labls = sess.run(a1())
+            imgs, labls = sess.run(a1())
 
-        labels = labels_table.lookup(keys=tf.constant(labls))
-        l = tf.one_hot(indices=labels, depth=NCLASSES)
-        l2 = l.eval()
+            labels = labels_table_2.lookup(keys=tf.constant(labls))
+            l = tf.one_hot(indices=labels, depth=NCLASSES)
+            l2 = l.eval()
 
-        for i in range(10):
-            plt.imshow(imgs['input_1'][i, :, :, :])
-            plt.title(labls[i])
-            plt.show(block=False)
-            print("Done")
+            for i in range(10):
+                plt.imshow(imgs['input_1'][i, :, :, :])
+                plt.title(labls[i])
+                plt.show(block=False)
+                print("Done")
 
-    print("Done")
+        print("Done")

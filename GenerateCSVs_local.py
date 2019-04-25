@@ -11,20 +11,23 @@ bucket_path = dB_path
 file_list = []
 label_list = []
 
+filename_classes = "D:/ML/Databases/Birds_dB/Mappings/minimal_bird_list.txt"
+LIST_OF_CLASSES = [line.strip() for line in open(filename_classes, 'r')]
+
+
 f = open('D:/ML/Databases/Birds_dB/Mappings/classes.txt', 'w')
 
 num_classes = 0
-with os.scandir(dB_path) as folders:
-    for folder in folders:
-        f.write(folder.name + "\n")  # Give your csv text here.
+for i in range(len(LIST_OF_CLASSES)):
+    f.write(LIST_OF_CLASSES[i] + "\n")
 
-        num_classes += 1
-        img_path = dB_path + "/" + folder.name
-        with os.scandir(img_path) as files:
-            for file in files:
-                line = bucket_path + folder.name + "/" + file.name
-                file_list.append(line)
-                label_list.append(folder.name)
+    num_classes += 1
+    img_path = dB_path + LIST_OF_CLASSES[i] + "/"
+    with os.scandir(img_path) as files:
+        for file in files:
+            line = bucket_path + LIST_OF_CLASSES[i] + "/" + file.name
+            file_list.append(line)
+            label_list.append(str(i))
 f.close()
 
 print("Total classes = " + str(num_classes))

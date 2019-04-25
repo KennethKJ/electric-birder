@@ -16,7 +16,7 @@ if __name__ == '__main__':
         '--output_dir',
         help='GCS location to write checkpoints and export models',
         required=False,
-        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/Estimator output/1/'
+        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/Estimator output/3/'
     )
     parser.add_argument(
         '--batch_size',
@@ -48,6 +48,16 @@ if __name__ == '__main__':
         type=int,
         default=None
     )
+    parser.add_argument(
+        '--train_csv',
+        help='CSV filename/path containing list over images and labels for training',
+        default="C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/train_set_local.csv"
+    )
+    parser.add_argument(
+        '--eval_csv',
+        help='CSV filename/path containing list over images and labels for evaluation',
+        default="C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/train_set_local.csv"
+    )
 
     ## parse all arguments
     args = parser.parse_args()
@@ -70,6 +80,8 @@ if __name__ == '__main__':
 
     # Throw properties into params dict to pass to other functions
     params = {}
+    params['train csv'] = arguments.pop('train_csv')
+    params['eval csv'] = arguments.pop('eval_csv')
     params['output path'] = arguments.pop('output_dir')
     params['data path'] = arguments.pop('datapath')
     params['image size'] = [244, 224]
@@ -79,10 +91,11 @@ if __name__ == '__main__':
     params['learning rate'] = 0.007
     params['dropout rate'] = 0.5
     params['num classes'] = 10
-    params['train steps'] = (arguments.pop('train_examples') * 1000) / params["batch size"]
+    params['train steps'] = int((arguments.pop('train_examples') * 1000) / params["batch size"])
     params['eval steps'] = arguments.pop('eval_steps')
 
     print("Will train for {} steps using batch_size={}".format(params['train steps'], params['batch size']))
 
     # Run the training job
+
     model.go_train(params)
