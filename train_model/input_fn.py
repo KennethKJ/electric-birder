@@ -87,33 +87,37 @@ def make_input_fn(csv_of_filenames, mode, params, augment=False):
     return _input_fn
 
 
-# test = False
-# if test:
-#     a1 = make_input_fn("train_set_local.csv", 10, tf.estimator.ModeKeys.TRAIN, augment=False)
-#     b, c = a1()
+test = False
+
+params = {};
+params['batch size'] = 10
+
+if test:
+    a1 = make_input_fn("train_set_local.csv",  tf.estimator.ModeKeys.TRAIN, params, augment=False)
+    b, c = a1()
 
 
-#     filename = "D:/ML/Databases/Birds_dB/Mappings/classes.txt"
-#     LIST_OF_LABELS = [line.strip() for line in open(filename, 'r')]
+    filename = "D:/ML/Databases/Birds_dB/Mappings/classes.txt"
+    LIST_OF_LABELS = [line.strip() for line in open(filename, 'r')]
 
-#     labels_table_2 = tf.contrib.lookup.index_table_from_tensor(
-#         mapping=tf.constant(value=LIST_OF_LABELS, dtype=tf.string))
+    labels_table_2 = tf.contrib.lookup.index_table_from_tensor(
+        mapping=tf.constant(value=LIST_OF_LABELS, dtype=tf.string))
 
-#     with tf.Session() as sess:
-#         tf.tables_initializer().run()
+    with tf.Session() as sess:
+        tf.tables_initializer().run()
 
-#         while 1 == 1:
+        while 1 == 1:
 
-#             imgs, labls = sess.run(a1())
+            imgs, labls = sess.run(a1())
 
-#             labels = labels_table_2.lookup(keys=tf.constant(labls))
-#             l = tf.one_hot(indices=labels, depth=NCLASSES)
-#             l2 = l.eval()
+            labels = labels_table_2.lookup(keys=tf.constant(labls))
+            l = tf.one_hot(indices=labels, depth=NCLASSES)
+            l2 = l.eval()
 
-#             for i in range(10):
-#                 plt.imshow(imgs['input_1'][i, :, :, :])
-#                 plt.title(labls[i])
-#                 plt.show(block=False)
-#                 print("Done")
+            for i in range(10):
+                plt.imshow(imgs['input_1'][i, :, :, :])
+                plt.title(labls[i])
+                plt.show(block=False)
+                print("Done")
 
-#         print("Done")
+        print("Done")
