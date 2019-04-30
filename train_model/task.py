@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, 'C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/')
-
 import argparse
 from train_model import model
 
@@ -8,21 +5,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--datapath',
-        help='GCS path to data. We assume that data is in gs://BUCKET/babyweight/preproc/',
+        help='GCS path to data',
         required=False,
-        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/Databases/Unified Feeder Birds Database/'
+        default='gs://electric-birder-71281-bird-db/Birds_dB/Images/'
     )
     parser.add_argument(
         '--output_dir',
         help='GCS location to write checkpoints and export models',
         required=False,
-        default='C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/Estimator output/3/'
+        default='gs://electric-birder-71281/Estimator_Output/3/'
     )
     parser.add_argument(
         '--batch_size',
         help='Number of examples to compute gradient over.',
         type=int,
-        default=26
+        default=10
     )
     parser.add_argument(
         '--job-dir',
@@ -31,7 +28,7 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '--numclasses',
-        help='Hidden layer sizes to use for DNN feature columns -- provide space-separated layers',
+        help='Number of classes',  # TODO: This should be auto deduced from train set in future
         nargs='+',
         type=int,
         default=10
@@ -51,13 +48,44 @@ if __name__ == '__main__':
     parser.add_argument(
         '--train_csv',
         help='CSV filename/path containing list over images and labels for training',
-        default="C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/train_set_local.csv"
+        default="gs://electric-birder-71281-bird-db/Birds_dB/Mappings/train_set_cloud.csv"
     )
     parser.add_argument(
         '--eval_csv',
         help='CSV filename/path containing list over images and labels for evaluation',
-        default="C:/Users/Kenneth Kragh Jensen/Google Drive/ML/EB/train_set_local.csv"
+        default="gs://electric-birder-71281-bird-db/Birds_dB/Mappings/eval_set_cloud.csv"
     )
+    parser.add_argument(
+        '--learning_rate',
+        help='Learning rate',
+        type=float,
+        default=0.001
+    )
+    parser.add_argument(
+        '--apply_augment',
+        help='Use data augmentation?',
+        type=bool,
+        default=True
+    )
+    parser.add_argument(
+        '--dropout_rate',
+        help='Rate of dropout',
+        type=float,
+        default=0.25
+    )
+    parser.add_argument(
+        '--run_on_cloud',
+        help='Switch to indicate if training is done on the cloud or not',
+        type=bool,
+        default=True
+    )
+    parser.add_argument(
+        '--eval_throttle_secs',
+        help='Switch to indicate if training is done on the cloud or not',
+        type=int,
+        default=1200
+    )
+
 
     ## parse all arguments
     args = parser.parse_args()
@@ -88,11 +116,14 @@ if __name__ == '__main__':
     params['num parallel calls'] = 4
     params["batch size"] = arguments.pop('batch_size')
     params['use random flip'] = True
-    params['learning rate'] = 0.007
-    params['dropout rate'] = 0.5
-    params['num classes'] = 10
+    params['learning rate'] = arguments.pop('learning_rate')
+    params['dropout rate'] = arguments.pop('dropout_rate')
+    params['num classes'] = arguments.pop('num_classes')
     params['train steps'] = int((arguments.pop('train_examples') * 1000) / params["batch size"])
     params['eval steps'] = arguments.pop('eval_steps')
+    params['eval_throttle_secs'] = arguments.pop('eval_throttle_secs')
+    params['isRunOnCloud'] = arguments.pop('run_on_cloud')
+
 
     print("Will train for {} steps using batch_size={}".format(params['train steps'], params['batch size']))
 

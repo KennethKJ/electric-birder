@@ -2,10 +2,10 @@ import tensorflow.keras.estimator as kes
 from tensorflow.keras.applications.vgg16 import VGG16
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dropout, Flatten, Dense
-from train_model.new_input_fn import make_input_fn
+from train_model.input_fn import make_input_fn
 
 import tensorflow as tf
-from train_model import data_retrieval as dr
+# from train_model import data_retrieval as dr
 import os
 
 
@@ -39,24 +39,32 @@ def create_estimator(params):
         metrics=["accuracy"]
     )
 
-    # Set up training config according to Intel recommendations
-    NUM_PARALLEL_EXEC_UNITS = 4
-    session_config = tf.ConfigProto(
-        intra_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
-        inter_op_parallelism_threads=2,
-        allow_soft_placement=True,
-        device_count={'CPU': NUM_PARALLEL_EXEC_UNITS}
-    )
 
-    os.environ["OMP_NUM_THREADS"] = "4"
-    os.environ["KMP_BLOCKTIME"] = "30"
-    os.environ["KMP_SETTINGS"] = "1"
-    os.environ["KMP_AFFINITY"] = "granularity=fine,verbose,compact,1,0"
+    if params['isRunOnCloud']:
 
-    run_config = tf.estimator.RunConfig(
-        session_config=session_config,
-        model_dir=params['output path']
-    )
+        run_config = tf.estimator.RunConfig(
+            model_dir=params['output path']
+        )
+    else:
+
+        # Set up training config according to Intel recommendations
+        NUM_PARALLEL_EXEC_UNITS = 4
+        session_config = tf.ConfigProto(
+            intra_op_parallelism_threads=NUM_PARALLEL_EXEC_UNITS,
+            inter_op_parallelism_threads=2,
+            allow_soft_placement=True,
+            device_count={'CPU': NUM_PARALLEL_EXEC_UNITS}
+        )
+
+        os.environ["OMP_NUM_THREADS"] = "4"
+        os.environ["KMP_BLOCKTIME"] = "30"
+        os.environ["KMP_SETTINGS"] = "1"
+        os.environ["KMP_AFFINITY"] = "granularity=fine,verbose,compact,1,0"
+
+        run_config = tf.estimator.RunConfig(
+            session_config=session_config,
+            model_dir=params['output path']
+        )
 
     # Convert to Estimator (https://cloud.google.com/blog/products/gcp/
     # new-in-tensorflow-14-converting-a-keras-model-to-a-tensorflow-estimator)
@@ -96,8 +104,9 @@ def go_train(params):
         # lambda: input_fn(data['train_images'], data['train_labels'], params, True)
     )
     eval_spec = tf.estimator.EvalSpec(
-        input_fn=make_input_fn(params['train csv'], tf.estimator.ModeKeys.EVAL, params, augment=True),
-        steps=10  # Evaluates on 10 batches
+        input_fn=make_input_fn(params['eval csv'], tf.estimator.ModeKeys.EVAL, params, augment=True),
+        steps=params['eval steps'],  # Evaluates on 10 batches
+        throttle_secs=params['eval_throttle_secs']
     )
 
     # Set logging level

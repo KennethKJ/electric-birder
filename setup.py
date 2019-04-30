@@ -1,7 +1,7 @@
 from setuptools import find_packages
 from setuptools import setup
 
-REQUIRED_PACKAGES = ['tensorflow>=1.3']
+REQUIRED_PACKAGES = ['tensorflow>=1.13','keras>=2.2.4']
 
 setup(
     name='electric-birder',
@@ -11,6 +11,6 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
     include_package_data=True,
-    description='Baby Weight prediction in Cloud ML',
+    description='Electric birder',
     requires=[]
 )
