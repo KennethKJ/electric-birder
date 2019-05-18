@@ -1,2 +1,9 @@
+<<<<<<< HEAD
 .ipynb_checkpoints
 *.pyc
+=======
+.idea/
+Estimator output/
+train_model/__pycache__/
+old/
+>>>>>>> Ebirder_on_GitHub/master
